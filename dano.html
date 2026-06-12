@@ -246,7 +246,7 @@
   #gate-box{background:rgba(245,232,208,0.06);border:1px solid rgba(210,160,80,0.25);
     border-radius:20px;padding:32px 36px;display:flex;flex-direction:column;
     align-items:center;gap:14px;max-width:280px;width:80vw;}
-  #gate-paw{font-size:40px;line-height:1;}
+  #gate-paw{width:min(160px,45vw);object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.35));}
   #gate-title{font-size:16px;font-weight:800;color:var(--accent2);letter-spacing:0.3px;}
   #gate-sub{font-size:12px;color:var(--text2);text-align:center;line-height:1.6;}
   #gate-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
@@ -266,7 +266,7 @@
 <div id="intro"><img id="intro-img" src="dano_4.png" alt=""></div>
 <div id="gate">
   <div id="gate-box">
-    <div id="gate-paw">🐾</div>
+    <img id="gate-paw" src="dano_5.png" alt="dano">
     <div id="gate-title">사랑둥이 다노</div>
     <div id="gate-sub">비밀번호를 입력하면<br>입장할 수 있어요</div>
     <input id="gate-input" type="password" placeholder="••••" maxlength="12" autocomplete="off">
