@@ -1,0 +1,5 @@
+
+  <div id="cat-tabs">
+    <button class="cat-tab active" data-cat="lottery">🎰 냥냥 랜덤 추첨기</button>
+    <button class="cat-tab" data-cat="schedule">📅 냥냥 스케쥴</button>
+  </div>

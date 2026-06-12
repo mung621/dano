@@ -1,0 +1,23 @@
+
+  <div id="cat-schedule">
+    <div id="schedule-wrap">
+      <div id="calendar-col">
+        <div class="panel-title">다노 돌봄 알바 달력</div>
+        <div id="cal-header">
+          <button class="cal-nav" id="cal-prev">◀</button>
+          <span id="cal-title"></span>
+          <button class="cal-nav" id="cal-next">▶</button>
+        </div>
+        <div id="cal-grid"></div>
+        <div id="cal-legend">🐾 날짜를 클릭하여 방문일 확정 / 다시 클릭하면 취소</div>
+      </div>
+      <div id="stamp-col">
+        <div id="stamp-header">
+          <div id="stamp-title">🐾 다노 돌봄 도장판</div>
+          <span id="stamp-total">(총 0회)</span>
+        </div>
+        <div id="stamp-grid"></div>
+        <div id="stamp-info"></div>
+      </div>
+    </div>
+  </div>
