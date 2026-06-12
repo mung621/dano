@@ -29,7 +29,7 @@
   main{display:flex;flex:1;overflow:hidden;}
   #left{width:298px;min-width:260px;border-right:1px solid var(--border);
     display:flex;flex-direction:column;padding:20px 16px;gap:14px;
-    background:rgba(36,26,12,0.6);overflow-y:auto;}
+    background:rgba(36,26,12,0.6);overflow-y:scroll;}
   .panel-title{font-size:10px;font-weight:700;text-transform:uppercase;
     letter-spacing:1.5px;color:var(--accent2);display:flex;align-items:center;gap:5px;}
   .panel-title::before{content:"🐱";font-size:12px;}
@@ -74,10 +74,10 @@
     text-shadow:0 2px 8px rgba(0,0,0,.7);margin-bottom:2px;}
   #wheel{display:block;}
   /* CARD */
-  #card-screen{gap:10px;}
+  #card-screen{gap:10px;overflow-y:auto;}
   #card-hint{font-size:13px;color:var(--text2);}
   #card-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
-    max-width:660px;max-height:calc(100vh - 220px);overflow-y:auto;padding:4px;}
+    max-width:660px;overflow:visible;padding:16px 8px;}
   .play-card{width:86px;height:124px;border-radius:10px;border:2px solid var(--border);
     display:flex;align-items:center;justify-content:center;
     font-size:13px;font-weight:700;color:var(--text);cursor:pointer;
@@ -86,8 +86,8 @@
   .play-card:not(.flipped):not(.loser):hover{transform:translateY(-10px);box-shadow:0 14px 30px rgba(224,123,42,0.4);}
   .play-card.back::after{content:"🐾";font-size:26px;}
   .play-card.flipped{background:var(--surface2)!important;border-color:var(--gold);
-    color:var(--gold);transform:translateY(-10px) scale(1.06);
-    box-shadow:0 0 22px rgba(245,192,106,0.5);cursor:default;}
+    color:var(--gold);transform:translateY(-8px);
+    box-shadow:0 0 26px rgba(245,192,106,0.6);cursor:default;}
   .play-card.loser{opacity:0.18;cursor:default;transform:none!important;box-shadow:none!important;}
   /* PINBALL */
   #pinball-screen{gap:4px;}
@@ -436,23 +436,27 @@ function _pinballInit(){
     ['#7cf8e0','#2ae0c0','#08706a']
   ];
 
-  var balls = entries.map(function(name, i){
+  // 이름 순서를 매번 무작위로 섞어 시작 위치 랜덤화
+  var balls = shuffle(entries.map(function(name, i){
+    return { name: name, colorSet: BALL_COLORS[i % BALL_COLORS.length] };
+  }));
+  balls = balls.map(function(b, i){
     var startX = N > 1
       ? WALL_L + BALL_R + (i / (N - 1)) * (W - WALL_L * 2 - BALL_R * 2)
       : W / 2;
     startX = Math.max(WALL_L + BALL_R, Math.min(WALL_R - BALL_R, startX));
     return {
-      name: name,
-      x: startX + (Math.random() - 0.5) * BALL_R,
-      y: BANNER + BALL_R + 2,
-      vx: (Math.random() - 0.5) * 3,
+      name: b.name,
+      x: startX + (Math.random() - 0.5) * BALL_R * 2,
+      y: BANNER + BALL_R + 2 + i * Math.min(BALL_R * 0.3, 10),
+      vx: (Math.random() - 0.5) * 2,
       vy: 0,
       spin: Math.random() * Math.PI * 2,
       trail: [],
       won: false,
       sunk: false,
       sunkTick: 0,
-      colorSet: BALL_COLORS[i % BALL_COLORS.length]
+      colorSet: b.colorSet
     };
   });
 
@@ -594,10 +598,10 @@ function _pinballInit(){
 
     for(var i=0;i<balls.length;i++){
       var ball=balls[i];
-      if(ball.sunk){ ball.sunkTick++; ball.y+=3; ball.spin+=0.05; continue; }
+      if(ball.sunk){ ball.sunkTick++; ball.y+=2; ball.spin+=0.04; continue; }
 
-      ball.vy+=0.3; ball.vx*=0.999;
-      ball.x+=ball.vx; ball.y+=ball.vy; ball.spin+=0.06;
+      ball.vy+=0.15; ball.vx*=0.998;
+      ball.x+=ball.vx; ball.y+=ball.vy; ball.spin+=0.04;
 
       if(ball.x-BALL_R<WALL_L){ ball.x=WALL_L+BALL_R; ball.vx=Math.abs(ball.vx)*0.7; }
       if(ball.x+BALL_R>WALL_R){ ball.x=WALL_R-BALL_R; ball.vx=-Math.abs(ball.vx)*0.7; }
@@ -611,8 +615,8 @@ function _pinballInit(){
           var nx=dx/dd, ny=dy/dd;
           var spd=Math.sqrt(ball.vx*ball.vx+ball.vy*ball.vy);
           var side=Math.random()>0.5?1:-1;
-          ball.vx=nx*spd*0.4+side*spd*0.75;
-          ball.vy=Math.abs(ny*spd)*0.7+1.5;
+          ball.vx=nx*spd*0.3+side*spd*0.9;
+          ball.vy=Math.abs(ny*spd)*0.5+0.8;
           ball.x=pp.x+nx*(BALL_R+PIN_R+2); ball.y=pp.y+ny*(BALL_R+PIN_R+2);
         }
       }
