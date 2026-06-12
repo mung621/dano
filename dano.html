@@ -238,11 +238,41 @@
   @keyframes introAppear{
     from{transform:scale(0.94);opacity:0;}
     to{transform:scale(1);opacity:1;}}
+
+  /* ── PASSWORD GATE ── */
+  #gate{position:fixed;inset:0;z-index:9998;background:#2e1808;
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:0;transition:opacity 0.4s ease;opacity:0;}
+  #gate-box{background:rgba(245,232,208,0.06);border:1px solid rgba(210,160,80,0.25);
+    border-radius:20px;padding:32px 36px;display:flex;flex-direction:column;
+    align-items:center;gap:14px;max-width:280px;width:80vw;}
+  #gate-paw{font-size:40px;line-height:1;}
+  #gate-title{font-size:16px;font-weight:800;color:var(--accent2);letter-spacing:0.3px;}
+  #gate-sub{font-size:12px;color:var(--text2);text-align:center;line-height:1.6;}
+  #gate-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+    color:var(--text);font-size:22px;padding:10px 16px;text-align:center;outline:none;
+    letter-spacing:6px;width:100%;transition:border-color .2s;}
+  #gate-input:focus{border-color:var(--accent);}
+  #gate-btn{background:var(--accent);border:none;border-radius:10px;color:#fff;
+    font-size:14px;font-weight:800;padding:11px 0;cursor:pointer;width:100%;
+    transition:background .2s;}
+  #gate-btn:hover{background:var(--accent2);color:#1a1208;}
+  #gate-err{font-size:12px;color:#f87c9e;display:none;text-align:center;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script></head>
 <body>
 <div id="intro"><img id="intro-img" src="dano_4.png" alt=""></div>
+<div id="gate">
+  <div id="gate-box">
+    <div id="gate-paw">🐾</div>
+    <div id="gate-title">사랑둥이 다노</div>
+    <div id="gate-sub">비밀번호를 입력하면<br>입장할 수 있어요</div>
+    <input id="gate-input" type="password" placeholder="••••" maxlength="12" autocomplete="off">
+    <button id="gate-btn">입장하기 🐾</button>
+    <div id="gate-err">비밀번호가 틀렸습니다 🐱</div>
+  </div>
+</div>
 
 <div id="app">
   <header>
