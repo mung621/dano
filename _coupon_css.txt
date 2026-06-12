@@ -1,0 +1,15 @@
+
+  /* ── COUPON USED ── */
+  .stamp-cell{position:relative;overflow:hidden;}
+  .stamp-used-img{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;}
+  .stamp-cell.used .stamp-used-img{display:block;}
+  .stamp-used-label{display:none;position:absolute;bottom:0;left:0;right:0;text-align:center;
+    font-size:8px;font-weight:800;color:#7df87c;background:rgba(0,0,0,0.72);padding:2px 0;letter-spacing:0.2px;}
+  .stamp-cell.used .stamp-used-label{display:block;}
+  .stamp-cell.used{cursor:pointer;border-color:rgba(125,248,124,0.45);}
+  /* ── MANUAL VISIT BUTTON ── */
+  #stamp-header{display:flex;align-items:center;gap:10px;}
+  #manual-visit-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);font-size:12px;font-weight:700;padding:6px 13px;cursor:pointer;
+    transition:all .2s;margin-left:auto;white-space:nowrap;}
+  #manual-visit-btn:hover{border-color:var(--accent);background:rgba(224,123,42,0.12);}
