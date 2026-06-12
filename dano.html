@@ -177,19 +177,25 @@
 
 
   /* ── COUPON USED ── */
-  .stamp-cell{position:relative;}
-  .stamp-img-wrap{flex:1;width:100%;min-height:0;position:relative;overflow:hidden;border-radius:6px;}
-  .stamp-used-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .stamp-cell{position:relative;cursor:pointer;}
+  .stamp-cell.empty-slot{cursor:default;}
+  .stamp-cell.used{height:80px;overflow:hidden;padding:4px;border-color:rgba(125,248,124,0.45);}
+  .stamp-img-wrap{width:100%;flex:1;min-height:0;position:relative;overflow:hidden;border-radius:6px;}
+  .stamp-used-img{width:100%;height:100%;object-fit:contain;display:block;background:rgba(0,0,0,0.18);}
   .stamp-used-label{position:absolute;bottom:0;left:0;right:0;text-align:center;
     font-size:8px;font-weight:800;color:#7df87c;background:rgba(0,0,0,0.72);padding:2px 0;}
-  .stamp-cell.used{padding:4px;cursor:pointer;border-color:rgba(125,248,124,0.45);}
   .manual-stamp{color:var(--accent2);font-weight:800;}
+  .stamp-use-btn{width:100%;text-align:center;font-size:8px;font-weight:800;
+    background:rgba(245,192,106,0.12);border:1px solid var(--gold);border-radius:3px;
+    padding:2px 0;cursor:pointer;color:var(--gold);margin-top:2px;transition:background .15s;}
+  .stamp-use-btn:hover{background:rgba(245,192,106,0.32);}
   /* ── STAMP BUTTON ── */
   #stamp-header{display:flex;align-items:center;gap:10px;}
   #manual-visit-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
     color:var(--text);font-size:12px;font-weight:700;padding:6px 13px;cursor:pointer;
     transition:all .2s;margin-left:auto;white-space:nowrap;}
   #manual-visit-btn:hover{border-color:var(--accent);background:rgba(224,123,42,0.12);}
+
   /* ── MOBILE RESPONSIVE ── */
   #wheel{display:block;max-width:100%;}
   @media (max-width:768px){
@@ -877,7 +883,7 @@ function scTodayStr(){
   return k.getFullYear()+'-'+String(k.getMonth()+1).padStart(2,'0')+'-'+String(k.getDate()).padStart(2,'0');
 }
 
-// 날짜 도장(정렬) + 냥냥 도장(뒤)
+// 날짜 도장(정렬순) 뒤에 냥냥 도장 붙이기
 function scGetOrdered(){
   const all=scGetVisits();
   const dates=all.filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v)).sort();
@@ -920,14 +926,34 @@ function scToggleVisit(ds){
   renderCalendar(); renderStamps();
 }
 
-// + 도장 발급: 냥냥 도장 추가 / 다시 클릭 시 마지막 냥냥 도장 제거
-function scToggleManualStamp(){
+// + 도장 발급: 제한 없이 냥냥 도장 추가
+function scAddManualStamp(){
   const all=scGetVisits();
-  const lastManual=all.lastIndexOf('manual');
-  if(lastManual>=0) all.splice(lastManual,1);
-  else all.push('manual');
+  all.push('manual');
   scSaveVisits(all);
   renderStamps();
+}
+
+// 비밀번호 확인 후 콜백
+function scCheckPassword(callback){
+  const input=prompt('비밀번호를 입력하세요 🐾');
+  if(input===null) return;
+  if(input==='0910') callback();
+  else alert('비밀번호가 틀렸습니다 🐱');
+}
+
+// 특정 인덱스(0-based)의 도장 삭제 (비밀번호 필요)
+function scDeleteStampAt(orderedIdx){
+  scCheckPassword(()=>{
+    const all=scGetVisits();
+    if(orderedIdx>=0 && orderedIdx<all.length){
+      all.splice(orderedIdx,1);
+      scSaveVisits(all);
+      // 삭제된 번호의 쿠폰사용 상태도 제거
+      scSaveUsed(scGetUsed().filter(n=>n!==orderedIdx+1));
+    }
+    renderCalendar(); renderStamps();
+  });
 }
 
 function renderStamps(){
@@ -946,32 +972,45 @@ function renderStamps(){
     const rewHtml=isRew?'<div class="stamp-reward'+(isFree?' reward-free':'')+'">'+rewText+'</div>':'';
     const cell=document.createElement('div');
     const isUsed=isRew&&i<N&&used.includes(num);
+
     if(i<N){
       const isManual=ordered[i]==='manual';
       const dateLabel=isManual?'냥냥':ordered[i].slice(5).replace('-','/');
+
       if(isUsed){
+        // 쿠폰 사용완료 상태 (dano_3.png)
         cell.className='stamp-cell filled reward-cell used';
         cell.innerHTML='<div class="stamp-num">'+num+'</div>'
           +'<div class="stamp-img-wrap"><img class="stamp-used-img" src="dano_3.png" alt="">'
           +'<div class="stamp-used-label">쿠폰사용완료</div></div>';
-        cell.title='다시 클릭하면 취소';
+        cell.title='클릭하면 도장 해제 (비밀번호 필요)';
+        cell.addEventListener('click',()=>scDeleteStampAt(i));
       } else {
         cell.className='stamp-cell filled'+(isRew?' reward-cell':'');
         cell.innerHTML='<div class="stamp-num">'+num+'</div><div class="stamp-icon">🐾</div>'
           +'<div class="stamp-date'+(isManual?' manual-stamp':'')+'">'+dateLabel+'</div>'+rewHtml;
-        if(isRew) cell.title='클릭하여 쿠폰 사용 처리';
+
+        // 혜택 도장: 쿠폰 사용완료 버튼 추가
+        if(isRew){
+          const useBtn=document.createElement('div');
+          useBtn.className='stamp-use-btn';
+          useBtn.textContent='쿠폰사용';
+          useBtn.title='쿠폰 사용 처리';
+          useBtn.addEventListener('click',(e)=>{
+            e.stopPropagation();
+            const u=scGetUsed(),ui=u.indexOf(num);
+            if(ui>=0) u.splice(ui,1); else u.push(num);
+            scSaveUsed(u); renderStamps();
+          });
+          cell.appendChild(useBtn);
+        }
+
+        cell.title='클릭하면 도장 해제 (비밀번호 필요)';
+        cell.addEventListener('click',()=>scDeleteStampAt(i));
       }
     } else {
       cell.className='stamp-cell empty-slot'+(isRew?' reward-cell':'');
       cell.innerHTML='<div class="stamp-num">'+num+'</div><div class="stamp-icon">🐾</div>'+rewHtml;
-    }
-    if(isRew&&i<N){
-      cell.style.cursor='pointer';
-      cell.addEventListener('click',()=>{
-        const u=scGetUsed(),ui=u.indexOf(num);
-        if(ui>=0) u.splice(ui,1); else u.push(num);
-        scSaveUsed(u); renderStamps();
-      });
     }
     grid.appendChild(cell);
   }
@@ -986,7 +1025,7 @@ function renderStamps(){
   }
 }
 
-document.getElementById('manual-visit-btn').addEventListener('click',scToggleManualStamp);
+document.getElementById('manual-visit-btn').addEventListener('click',scAddManualStamp);
 
 document.getElementById('cal-prev').addEventListener('click',()=>{
   if(--calMonth<0){calMonth=11;calYear--;} renderCalendar();
