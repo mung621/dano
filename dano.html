@@ -239,7 +239,8 @@
     from{transform:scale(0.94);opacity:0;}
     to{transform:scale(1);opacity:1;}}
 </style>
-</head>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script></head>
 <body>
 <div id="intro"><img id="intro-img" src="dano_4.png" alt=""></div>
 
@@ -888,10 +889,34 @@ const SCHED_REWARDS=['50%할인','1회무료','50%할인','1회무료'];
 const _kstNow=getKST();
 let calYear=_kstNow.getFullYear(), calMonth=_kstNow.getMonth();
 
-function scGetVisits(){ try{return JSON.parse(localStorage.getItem(VISITS_KEY)||'[]');}catch(e){return[];} }
-function scSaveVisits(v){ localStorage.setItem(VISITS_KEY,JSON.stringify(v)); }
-function scGetUsed(){ try{return JSON.parse(localStorage.getItem(USED_KEY)||'[]');}catch(e){return[];} }
-function scSaveUsed(v){ localStorage.setItem(USED_KEY,JSON.stringify(v)); }
+// Firebase 실시간 공유 동기화
+firebase.initializeApp({
+  apiKey:"AIzaSyASDXTLjXv7ex3hqbCqJM5NfDvrPm2SaPY",
+  authDomain:"dano-480a2.firebaseapp.com",
+  projectId:"dano-480a2",
+  storageBucket:"dano-480a2.firebasestorage.app",
+  messagingSenderId:"208994516996",
+  appId:"1:208994516996:web:be93e8be951b24d205b551"
+});
+const _db=firebase.firestore();
+_db.enablePersistence().catch(()=>{});
+const _docRef=_db.collection('dano').doc('shared');
+let _visits=[], _used=[], _fbReady=false;
+
+function scGetVisits(){ return _visits.slice(); }
+function scSaveVisits(v){ _visits=v; _docRef.set({visits:v},{merge:true}); }
+function scGetUsed(){ return _used.slice(); }
+function scSaveUsed(v){ _used=v; _docRef.set({usedCoupons:v},{merge:true}); }
+
+// 실시간 리스너 - 두 사람 모두 즉시 반영
+_docRef.onSnapshot(snap=>{
+  const d=snap.data()||{};
+  const nv=d.visits||[], nu=d.usedCoupons||[];
+  const diff=JSON.stringify(nv)!==JSON.stringify(_visits)||JSON.stringify(nu)!==JSON.stringify(_used);
+  _visits=nv; _used=nu;
+  if(!_fbReady){ _fbReady=true; renderCalendar(); renderStamps(); }
+  else if(diff){ renderCalendar(); renderStamps(); }
+});
 function scTodayStr(){
   const k=getKST();
   return k.getFullYear()+'-'+String(k.getMonth()+1).padStart(2,'0')+'-'+String(k.getDate()).padStart(2,'0');
@@ -1043,8 +1068,7 @@ document.getElementById('cal-next').addEventListener('click',()=>{
   if(++calMonth>11){calMonth=0;calYear++;} renderCalendar();
 });
 
-// Initialize
-renderCalendar(); renderStamps();
+// Firebase onSnapshot이 초기 렌더링을 처리합니다
 
 
 /* ── INTRO ── */
