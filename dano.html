@@ -259,8 +259,70 @@
   #gate-btn:hover{background:var(--accent2);color:#1a1208;}
   #gate-err{font-size:12px;color:#f87c9e;display:none;text-align:center;}
 </style>
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script></head>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js">
+/* ── PASSWORD GATE ── */
+(function(){
+  var GATE_PW='0910';
+  var gate=document.getElementById('gate');
+  var inp=document.getElementById('gate-input');
+  var btn=document.getElementById('gate-btn');
+  var err=document.getElementById('gate-err');
+
+  if(sessionStorage.getItem('dano_auth')==='1'){ return; }
+
+  setTimeout(function(){
+    gate.style.display='flex';
+    setTimeout(function(){ gate.style.opacity='1'; }, 30);
+    setTimeout(function(){ inp.focus(); }, 450);
+  }, 2050);
+
+  function tryEnter(){
+    if(inp.value===GATE_PW){
+      sessionStorage.setItem('dano_auth','1');
+      gate.style.opacity='0';
+      setTimeout(function(){ gate.style.display='none'; }, 450);
+    } else {
+      err.style.display='block';
+      inp.value=''; inp.focus();
+      setTimeout(function(){ err.style.display='none'; }, 2000);
+    }
+  }
+  btn.addEventListener('click', tryEnter);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') tryEnter(); });
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js">
+/* ── PASSWORD GATE ── */
+(function(){
+  var GATE_PW='0910';
+  var gate=document.getElementById('gate');
+  var inp=document.getElementById('gate-input');
+  var btn=document.getElementById('gate-btn');
+  var err=document.getElementById('gate-err');
+
+  if(sessionStorage.getItem('dano_auth')==='1'){ return; }
+
+  setTimeout(function(){
+    gate.style.display='flex';
+    setTimeout(function(){ gate.style.opacity='1'; }, 30);
+    setTimeout(function(){ inp.focus(); }, 450);
+  }, 2050);
+
+  function tryEnter(){
+    if(inp.value===GATE_PW){
+      sessionStorage.setItem('dano_auth','1');
+      gate.style.opacity='0';
+      setTimeout(function(){ gate.style.display='none'; }, 450);
+    } else {
+      err.style.display='block';
+      inp.value=''; inp.focus();
+      setTimeout(function(){ err.style.display='none'; }, 2000);
+    }
+  }
+  btn.addEventListener('click', tryEnter);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') tryEnter(); });
+})();
+</script></head>
 <body>
 <div id="intro"><img id="intro-img" src="dano_4.png" alt=""></div>
 <div id="gate">
@@ -1108,6 +1170,37 @@ document.getElementById('cal-next').addEventListener('click',()=>{
     intro.classList.add('fade-out');
     setTimeout(function(){ intro.style.display='none'; }, 750);
   }, 1200);
+})();
+
+/* ── PASSWORD GATE ── */
+(function(){
+  var GATE_PW='0910';
+  var gate=document.getElementById('gate');
+  var inp=document.getElementById('gate-input');
+  var btn=document.getElementById('gate-btn');
+  var err=document.getElementById('gate-err');
+
+  if(sessionStorage.getItem('dano_auth')==='1'){ return; }
+
+  setTimeout(function(){
+    gate.style.display='flex';
+    setTimeout(function(){ gate.style.opacity='1'; }, 30);
+    setTimeout(function(){ inp.focus(); }, 450);
+  }, 2050);
+
+  function tryEnter(){
+    if(inp.value===GATE_PW){
+      sessionStorage.setItem('dano_auth','1');
+      gate.style.opacity='0';
+      setTimeout(function(){ gate.style.display='none'; }, 450);
+    } else {
+      err.style.display='block';
+      inp.value=''; inp.focus();
+      setTimeout(function(){ err.style.display='none'; }, 2000);
+    }
+  }
+  btn.addEventListener('click', tryEnter);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') tryEnter(); });
 })();
 </script>
 </body>
