@@ -1228,7 +1228,7 @@ document.getElementById('memo-content-inp').addEventListener('keydown',function(
     if(inp.value===GATE_PW){
       sessionStorage.setItem('dano_auth','1');
       gate.style.opacity='0';
-      setTimeout(function(){ gate.style.display='none'; }, 450);
+      setTimeout(function(){ gate.style.display='none'; window.scrollTo(0,0); }, 450);
     } else {
       err.style.display='block';
       inp.value=''; inp.focus();
