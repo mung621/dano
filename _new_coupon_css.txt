@@ -1,0 +1,41 @@
+  /* ── COUPON USED ── */
+  .stamp-cell{position:relative;}
+  .stamp-img-wrap{flex:1;width:100%;min-height:0;position:relative;overflow:hidden;border-radius:6px;}
+  .stamp-used-img{width:100%;height:100%;object-fit:cover;display:block;}
+  .stamp-used-label{position:absolute;bottom:0;left:0;right:0;text-align:center;
+    font-size:8px;font-weight:800;color:#7df87c;background:rgba(0,0,0,0.72);padding:2px 0;}
+  .stamp-cell.used{padding:4px;cursor:pointer;border-color:rgba(125,248,124,0.45);}
+  .manual-stamp{color:var(--accent2);font-weight:800;}
+  /* ── STAMP BUTTON ── */
+  #stamp-header{display:flex;align-items:center;gap:10px;}
+  #manual-visit-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);font-size:12px;font-weight:700;padding:6px 13px;cursor:pointer;
+    transition:all .2s;margin-left:auto;white-space:nowrap;}
+  #manual-visit-btn:hover{border-color:var(--accent);background:rgba(224,123,42,0.12);}
+  /* ── MOBILE RESPONSIVE ── */
+  #wheel{display:block;max-width:100%;}
+  @media (max-width:768px){
+    #app{height:auto;min-height:100vh;overflow:visible;}
+    main{flex-direction:column;height:auto;overflow:visible;}
+    #left{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);
+      height:auto;overflow-y:visible;padding:14px 12px;}
+    #entries-textarea{min-height:100px;}
+    #right{flex:none;height:auto;overflow:visible;}
+    #stage{height:auto;min-height:50vw;overflow:visible;padding:12px;}
+    #cat-schedule{height:auto;overflow:visible;}
+    #schedule-wrap{flex-direction:column;height:auto;overflow:visible;}
+    #calendar-col{width:100%;border-right:none;border-bottom:1px solid var(--border);height:auto;overflow-y:visible;}
+    #stamp-col{height:auto;overflow:visible;}
+    #stamp-grid{grid-template-columns:repeat(4,1fr);}
+    .roulette-wrap{width:100% !important;max-width:360px;}
+    #card-grid{max-width:100%;}
+    .cat-tab{font-size:12px;padding:10px 10px;}
+  }
+  @media (max-width:480px){
+    header h1{font-size:17px;}
+    #kst-clock{font-size:10px;padding:5px 10px;}
+    #stamp-grid{grid-template-columns:repeat(3,1fr);}
+    .cat-tab{font-size:11px;padding:9px 8px;}
+    .method-btn{padding:9px 4px;}
+    #stage{min-height:60vw;}
+  }

@@ -1,0 +1,136 @@
+/* ━━━━ 냥냥 스케쥴 ━━━━ */
+const VISITS_KEY='dano_visits';
+const USED_KEY='dano_used_coupons';
+const SCHED_REWARDS=['50%할인','1회무료','50%할인','1회무료'];
+const _kstNow=getKST();
+let calYear=_kstNow.getFullYear(), calMonth=_kstNow.getMonth();
+
+function scGetVisits(){ try{return JSON.parse(localStorage.getItem(VISITS_KEY)||'[]');}catch(e){return[];} }
+function scSaveVisits(v){ localStorage.setItem(VISITS_KEY,JSON.stringify(v)); }
+function scGetUsed(){ try{return JSON.parse(localStorage.getItem(USED_KEY)||'[]');}catch(e){return[];} }
+function scSaveUsed(v){ localStorage.setItem(USED_KEY,JSON.stringify(v)); }
+function scTodayStr(){
+  const k=getKST();
+  return k.getFullYear()+'-'+String(k.getMonth()+1).padStart(2,'0')+'-'+String(k.getDate()).padStart(2,'0');
+}
+
+// 날짜 도장(정렬) + 냥냥 도장(뒤)
+function scGetOrdered(){
+  const all=scGetVisits();
+  const dates=all.filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v)).sort();
+  const manuals=all.filter(v=>v==='manual');
+  return [...dates,...manuals];
+}
+
+function renderCalendar(){
+  const dateVisits=scGetVisits().filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v));
+  document.getElementById('cal-title').textContent=calYear+'년 '+(calMonth+1)+'월';
+  const grid=document.getElementById('cal-grid'); grid.innerHTML='';
+  ['월','화','수','목','금','토','일'].forEach(d=>{
+    const el=document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const firstDay=new Date(calYear,calMonth,1);
+  const lastDate=new Date(calYear,calMonth+1,0).getDate();
+  const startDow=(firstDay.getDay()+6)%7;
+  const today=scTodayStr();
+  for(let i=0;i<startDow;i++){
+    const e=document.createElement('div'); e.className='cal-day cal-empty'; grid.appendChild(e);
+  }
+  for(let d=1;d<=lastDate;d++){
+    const ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const cell=document.createElement('div'); cell.className='cal-day';
+    if(ds===today) cell.classList.add('cal-today');
+    if(dateVisits.includes(ds)) cell.classList.add('visited');
+    cell.textContent=d;
+    cell.addEventListener('click',()=>scToggleVisit(ds));
+    grid.appendChild(cell);
+  }
+}
+
+function scToggleVisit(ds){
+  let all=scGetVisits();
+  const idx=all.indexOf(ds);
+  if(idx>=0) all.splice(idx,1); else all.push(ds);
+  const dates=all.filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v)).sort();
+  const manuals=all.filter(v=>v==='manual');
+  scSaveVisits([...dates,...manuals]);
+  renderCalendar(); renderStamps();
+}
+
+// + 도장 발급: 냥냥 도장 추가 / 다시 클릭 시 마지막 냥냥 도장 제거
+function scToggleManualStamp(){
+  const all=scGetVisits();
+  const lastManual=all.lastIndexOf('manual');
+  if(lastManual>=0) all.splice(lastManual,1);
+  else all.push('manual');
+  scSaveVisits(all);
+  renderStamps();
+}
+
+function renderStamps(){
+  const ordered=scGetOrdered();
+  const N=ordered.length;
+  const used=scGetUsed();
+  const grid=document.getElementById('stamp-grid'); grid.innerHTML='';
+  const partial=N%5;
+  const totalShow=N+(partial>0?5-partial:5);
+  for(let i=0;i<totalShow;i++){
+    const num=i+1;
+    const isRew=num%5===0;
+    const rewIdx=isRew?(Math.floor(num/5)-1)%SCHED_REWARDS.length:-1;
+    const rewText=isRew?SCHED_REWARDS[rewIdx]:'';
+    const isFree=rewText==='1회무료';
+    const rewHtml=isRew?'<div class="stamp-reward'+(isFree?' reward-free':'')+'">'+rewText+'</div>':'';
+    const cell=document.createElement('div');
+    const isUsed=isRew&&i<N&&used.includes(num);
+    if(i<N){
+      const isManual=ordered[i]==='manual';
+      const dateLabel=isManual?'냥냥':ordered[i].slice(5).replace('-','/');
+      if(isUsed){
+        cell.className='stamp-cell filled reward-cell used';
+        cell.innerHTML='<div class="stamp-num">'+num+'</div>'
+          +'<div class="stamp-img-wrap"><img class="stamp-used-img" src="dano_3.png" alt="">'
+          +'<div class="stamp-used-label">쿠폰사용완료</div></div>';
+        cell.title='다시 클릭하면 취소';
+      } else {
+        cell.className='stamp-cell filled'+(isRew?' reward-cell':'');
+        cell.innerHTML='<div class="stamp-num">'+num+'</div><div class="stamp-icon">🐾</div>'
+          +'<div class="stamp-date'+(isManual?' manual-stamp':'')+'">'+dateLabel+'</div>'+rewHtml;
+        if(isRew) cell.title='클릭하여 쿠폰 사용 처리';
+      }
+    } else {
+      cell.className='stamp-cell empty-slot'+(isRew?' reward-cell':'');
+      cell.innerHTML='<div class="stamp-num">'+num+'</div><div class="stamp-icon">🐾</div>'+rewHtml;
+    }
+    if(isRew&&i<N){
+      cell.style.cursor='pointer';
+      cell.addEventListener('click',()=>{
+        const u=scGetUsed(),ui=u.indexOf(num);
+        if(ui>=0) u.splice(ui,1); else u.push(num);
+        scSaveUsed(u); renderStamps();
+      });
+    }
+    grid.appendChild(cell);
+  }
+  document.getElementById('stamp-total').textContent='(총 '+N+'회)';
+  if(N===0){
+    document.getElementById('stamp-info').textContent='달력에서 날짜를 클릭하거나 "+ 도장 발급" 버튼을 눌러요 🐾';
+  } else {
+    const nextMult=Math.ceil((N+1)/5)*5;
+    const nextRewIdx=(Math.floor(nextMult/5)-1)%SCHED_REWARDS.length;
+    document.getElementById('stamp-info').textContent=
+      '다음 혜택: '+nextMult+'번째 방문 → '+SCHED_REWARDS[nextRewIdx]+' 🐾 ('+(nextMult-N)+'회 남음)';
+  }
+}
+
+document.getElementById('manual-visit-btn').addEventListener('click',scToggleManualStamp);
+
+document.getElementById('cal-prev').addEventListener('click',()=>{
+  if(--calMonth<0){calMonth=11;calYear--;} renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click',()=>{
+  if(++calMonth>11){calMonth=0;calYear++;} renderCalendar();
+});
+
+// Initialize
+renderCalendar(); renderStamps();
