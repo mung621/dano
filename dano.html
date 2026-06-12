@@ -108,16 +108,6 @@
   .btn-sec{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
     color:var(--text);font-size:13px;font-weight:600;padding:10px 20px;cursor:pointer;transition:all .2s;}
   .btn-sec:hover{border-color:var(--accent2);color:var(--accent2);}
-  #rec-bar{display:flex;align-items:center;gap:12px;padding:10px 24px;
-    border-top:1px solid var(--border);background:rgba(36,26,12,0.9);}
-  #rec-dot{width:9px;height:9px;border-radius:50%;background:#444;transition:background .3s;}
-  #rec-dot.active{background:#ff5533;animation:blink 1s infinite;}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-  #rec-status{font-size:13px;color:var(--text2);flex:1;}
-  #rec-btn{background:transparent;border:1px solid var(--border);border-radius:8px;
-    color:var(--text2);font-size:13px;padding:6px 14px;cursor:pointer;transition:all .2s;}
-  #rec-btn:hover{border-color:var(--accent);color:var(--accent);}
-  #rec-btn.recording{border-color:#ff5533;color:#ff5533;}
   @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
   .fade-in{animation:fadeInUp .35s ease;}
 
@@ -379,11 +369,6 @@
           </div>
         </div>
       </div>
-      <div id="rec-bar">
-        <div id="rec-dot"></div>
-        <div id="rec-status">녹화 준비됨</div>
-        <button id="rec-btn">⏺ 녹화 시작</button>
-      </div>
     </div>
   </main>
 
@@ -480,7 +465,6 @@ function showResult(winners){
     '시작: '+fmtKSTFull(startKST)+'<br>완료: '+fmtKSTFull(end);
   document.getElementById('result-overlay').classList.add('show');
   running=false;
-  if(mediaRec&&mediaRec.state==='recording') setTimeout(stopRecording,800);
 }
 document.getElementById('close-result-btn').addEventListener('click',()=>{
   document.getElementById('result-overlay').classList.remove('show');
@@ -907,36 +891,6 @@ function _pinballInit(){
   requestAnimationFrame(frame);
 }
 
-/* ━━━━ RECORDING ━━━━ */
-let mediaRec=null,chunks=[];
-async function startRecording(){
-  try{
-    const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
-    chunks=[];
-    mediaRec=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'});
-    mediaRec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-    mediaRec.onstop=()=>{
-      stream.getTracks().forEach(t=>t.stop());
-      const blob=new Blob(chunks,{type:'video/webm'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download='다노추첨_'+fmtKSTFull(getKST()).replace(/[: .]/g,'-')+'.webm';
-      a.click();setRecUI(false);
-    };
-    mediaRec.start(200);setRecUI(true);
-  }catch(e){alert('화면 녹화 권한이 필요합니다 🐾');running=false;}
-}
-function stopRecording(){if(mediaRec&&mediaRec.state==='recording')mediaRec.stop();}
-function setRecUI(on){
-  document.getElementById('rec-dot').classList.toggle('active',on);
-  document.getElementById('rec-status').textContent=on?'🔴 녹화 중…':'녹화 준비됨';
-  const btn=document.getElementById('rec-btn');
-  btn.textContent=on?'⏹ 녹화 중지':'⏺ 녹화 시작';
-  btn.classList.toggle('recording',on);
-}
-document.getElementById('rec-btn').addEventListener('click',()=>{
-  if(mediaRec&&mediaRec.state==='recording')stopRecording();else startRecording();
-});
 
 
 /* ━━━━ CATEGORY TABS ━━━━ */
