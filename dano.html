@@ -509,6 +509,26 @@ function resolveEntry(e){
   return e;
 }
 
+/* 룰렛/카드용: 범위 항목을 10개의 랜덤 금액으로 확장 */
+function expandForDisplay(arr){
+  const result=[];
+  arr.forEach(e=>{
+    const m=e.match(/^([\d,]+)원\s*~\s*([\d,]+)원$/);
+    if(m){
+      const lo=parseInt(m[1].replace(/,/g,'')),hi=parseInt(m[2].replace(/,/g,''));
+      if(!isNaN(lo)&&!isNaN(hi)&&hi>=lo){
+        for(let k=0;k<10;k++){
+          const v=lo+Math.floor(Math.random()*(hi-lo+1));
+          result.push(v.toLocaleString()+'원');
+        }
+        return;
+      }
+    }
+    result.push(e);
+  });
+  return result;
+}
+
 /* 항목 파싱: 줄바꿈 + 쉼표 구분 지원 (범위 항목은 단일 항목으로 유지) */
 function parseEntries(text){
   const result=[];
@@ -530,7 +550,7 @@ function runRoulette(){
   showScreen('roulette');
   const cv=document.getElementById('wheel'),ctx=cv.getContext('2d');
   const W=460,CX=W/2,CY=W/2,R=208;
-  const pool=shuffle([...entries]).slice(0,Math.min(entries.length,20));
+  const pool=shuffle(expandForDisplay([...entries])).slice(0,20);
   const n=pool.length,sa=(2*Math.PI)/n;
   let rot=-Math.PI/2-sa/2;
   let spd=0.24+Math.random()*0.08,decel=false;
@@ -587,7 +607,7 @@ function runRoulette(){
 function runCard(){
   showScreen('card');
   const grid=document.getElementById('card-grid');grid.innerHTML='';
-  const pool=shuffle([...entries]);
+  const pool=shuffle(expandForDisplay([...entries]));
   const total=Math.min(pool.length,30);
   let drawn=0;const winners=[];
   document.getElementById('card-hint').textContent='카드를 클릭해서 뽑으세요 ('+drawCount+'개)';
