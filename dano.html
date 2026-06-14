@@ -319,7 +319,7 @@
     <div id="left">
       <div class="panel-title">두근두근</div>
       <div id="entries-box">
-        <textarea id="entries-textarea" placeholder="텍스트" spellcheck="false"></textarea>
+        <textarea id="entries-textarea" placeholder="예시)&#10;A) 1000원 ~ 5000원&#10;B) 1000원, 2000원, 3000원" spellcheck="false"></textarea>
         <div id="entry-count">0 / 999</div>
       </div>
       <div id="count-row">
@@ -433,7 +433,7 @@ document.getElementById('logo-btn').addEventListener('click',()=>{
 const ta=document.getElementById('entries-textarea');
 const countEl=document.getElementById('entry-count');
 ta.addEventListener('input',()=>{
-  entries=ta.value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,999);
+  entries=parseEntries(ta.value);
   countEl.textContent=entries.length+' / 999';
 });
 
@@ -459,7 +459,7 @@ function showScreen(id){
 
 /* ── RESULT ── */
 function showResult(winners){
-  document.getElementById('winners-text').textContent=winners.join('\n');
+  document.getElementById('winners-text').textContent=winners.map(resolveEntry).join('\n');
   const end=getKST();
   document.getElementById('result-timestamp').innerHTML=
     '시작: '+fmtKSTFull(startKST)+'<br>완료: '+fmtKSTFull(end);
@@ -480,7 +480,7 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
 /* ── START ── */
 document.getElementById('start-btn').addEventListener('click',beginDraw);
 function beginDraw(){
-  entries=ta.value.split('\n').map(s=>s.trim()).filter(Boolean).slice(0,999);
+  entries=parseEntries(ta.value);
   drawCount=Math.max(1,Math.min(parseInt(dcEl.value)||1,entries.length));
   if(!entries.length){alert('내용을 입력하세요! 🐱');return;}
   if(running)return;
@@ -495,6 +495,32 @@ function shuffle(a){
   for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
   return b;
 }
+
+/* 범위 항목 해석: "1000원 ~ 5000원" → 범위 내 랜덤 금액 */
+function resolveEntry(e){
+  const m=e.match(/^([\d,]+)원\s*~\s*([\d,]+)원$/);
+  if(m){
+    const lo=parseInt(m[1].replace(/,/g,'')),hi=parseInt(m[2].replace(/,/g,''));
+    if(!isNaN(lo)&&!isNaN(hi)&&hi>=lo){
+      const v=lo+Math.floor(Math.random()*(hi-lo+1));
+      return v.toLocaleString()+'원';
+    }
+  }
+  return e;
+}
+
+/* 항목 파싱: 줄바꿈 + 쉼표 구분 지원 (범위 항목은 단일 항목으로 유지) */
+function parseEntries(text){
+  const result=[];
+  text.split('\n').forEach(line=>{
+    line=line.trim(); if(!line) return;
+    if(/^[\d,]+원\s*~\s*[\d,]+원$/.test(line)){result.push(line);}
+    else if(line.includes(','))line.split(',').forEach(p=>{p=p.trim();if(p)result.push(p);});
+    else result.push(line);
+  });
+  return result.slice(0,999);
+}
+
 const PAL=['#e07b2a','#f5c06a','#c4853a','#d4874a','#a06030','#f0a850','#b87040','#e8963c','#cc6622','#ffb347'];
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -571,9 +597,10 @@ function runCard(){
     card.addEventListener('click',()=>{
       if(card.classList.contains('flipped')||card.classList.contains('loser')||drawn>=drawCount)return;
       card.classList.remove('back');card.classList.add('flipped');
-      card.textContent=pool[i];
-      card.style.fontSize=pool[i].length>5?'11px':'14px';
-      winners.push(pool[i]);drawn++;
+      const resolved=resolveEntry(pool[i]);
+      card.textContent=resolved;
+      card.style.fontSize=resolved.length>5?'11px':'14px';
+      winners.push(resolved);drawn++;
       if(drawn>=drawCount){
         grid.querySelectorAll('.play-card.back').forEach(c=>c.classList.add('loser'));
         setTimeout(()=>showResult(winners),600);
