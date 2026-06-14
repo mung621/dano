@@ -614,30 +614,24 @@ function runCard(){
   const pool=shuffle(expandForDisplay([...entries]));
   const total=Math.min(pool.length,30);
   const cnt=Math.min(drawCount,total);
-  const winners=pool.slice(0,cnt);
-  const positions=shuffle([...Array(total).keys()]);
-  const winnerPos=new Set(positions.slice(0,cnt));
-  document.getElementById('card-hint').textContent=cnt+'개를 추첨합니다!';
-  const cards=[];
+  let drawn=0;const winners=[];
+  document.getElementById('card-hint').textContent='카드를 클릭해서 뽑으세요 ('+cnt+'개)';
   for(let i=0;i<total;i++){
     const card=document.createElement('div');
     card.className='play-card back';
-    cards.push(card);grid.appendChild(card);
-  }
-  setTimeout(()=>{
-    let wi=0;
-    for(let i=0;i<total;i++){
-      if(winnerPos.has(i)){
-        const val=winners[wi++];
-        cards[i].classList.remove('back');cards[i].classList.add('flipped');
-        cards[i].textContent=val;
-        cards[i].style.fontSize=val.length>5?'11px':'14px';
-      } else {
-        cards[i].classList.add('loser');
+    card.addEventListener('click',()=>{
+      if(card.classList.contains('flipped')||card.classList.contains('loser')||drawn>=cnt)return;
+      card.classList.remove('back');card.classList.add('flipped');
+      card.textContent=pool[i];
+      card.style.fontSize=pool[i].length>5?'11px':'14px';
+      winners.push(pool[i]);drawn++;
+      if(drawn>=cnt){
+        grid.querySelectorAll('.play-card.back').forEach(c=>c.classList.add('loser'));
+        setTimeout(()=>showResult(winners),600);
       }
-    }
-    setTimeout(()=>showResult(winners),1000);
-  },1200);
+    });
+    grid.appendChild(card);
+  }
 }
 
 /* ━━━━ CATEGORY TABS ━━━━ */
