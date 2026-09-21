@@ -105,6 +105,13 @@
   #result-box h2{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:2px;
     text-transform:uppercase;margin-bottom:10px;}
   .winners{font-size:26px;font-weight:800;color:var(--gold);line-height:1.6;white-space:pre-line;}
+  .winners.multi{display:grid;grid-template-columns:repeat(2,1fr);gap:2px 28px;
+    font-size:20px;line-height:1.7;white-space:normal;}
+  #result-box.compact{padding:22px 36px;min-width:300px;}
+  #winners-sum{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border);
+    font-size:30px;font-weight:800;color:var(--accent2);}
+  #winners-sum .sum-label{display:block;font-size:11px;font-weight:600;color:var(--text2);
+    letter-spacing:2px;margin-bottom:4px;}
   .timestamp{margin-top:12px;font-size:11px;color:var(--text2);font-variant-numeric:tabular-nums;line-height:1.8;}
   .action-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
   .btn-sec{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
@@ -363,6 +370,7 @@
             <div class="crown">🐾</div>
             <h2>당첨!</h2>
             <div class="winners" id="winners-text"></div>
+            <div id="winners-sum"></div>
             <div class="timestamp" id="result-timestamp"></div>
           </div>
           <div class="action-row">
@@ -458,7 +466,24 @@ function showScreen(id){
 
 /* ── RESULT ── */
 function showResult(winners){
-  document.getElementById('winners-text').textContent=winners.map(resolveEntry).join('\n');
+  const items=winners.map(resolveEntry);
+  const winEl=document.getElementById('winners-text');
+  const multi=items.length>=2;
+  winEl.classList.toggle('multi',multi);
+  document.getElementById('result-box').classList.toggle('compact',multi);
+  if(multi){
+    winEl.innerHTML=items.map(s=>'<div>'+escHtml(s)+'</div>').join('');
+  } else {
+    winEl.textContent=items.join('\n');
+  }
+  const sumEl=document.getElementById('winners-sum');
+  if(items.length>=2){
+    const sum=items.reduce((t,s)=>t+(parseInt(String(s).replace(/[^\d-]/g,''))||0),0);
+    sumEl.innerHTML='<span class="sum-label">합계 ('+items.length+'개)</span>'+sum.toLocaleString()+'원';
+    sumEl.style.display='block';
+  } else {
+    sumEl.style.display='none';
+  }
   const end=getKST();
   document.getElementById('result-timestamp').innerHTML=
     '시작: '+fmtKSTFull(startKST)+'<br>완료: '+fmtKSTFull(end);
